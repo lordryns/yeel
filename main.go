@@ -2,17 +2,31 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"yeel/config"
 	"yeel/globals"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
+
+
+func placeWidgetInsideCanvasRelatively(obj fyne.CanvasObject, relx, rely, relw, relh float32, parentSize fyne.Size) {
+	// function is meant to replicate tkinters .place behaviour
+	// scale is not 1:1
+	var x = relx * float32(parentSize.Width)
+        var y = rely * float32(parentSize.Height)
+        var width = relw * float32(parentSize.Width)
+        var height = relh * float32(parentSize.Height)
+        obj.Move(fyne.NewPos(x, y))
+        obj.Resize(fyne.NewSize(width, height))
+}
 
 func main() {
 	var app = app.New()
@@ -53,7 +67,19 @@ func main() {
 			wi.(*widget.Label).SetText(globals.ProjectSchema.Widgets[lii].Title)
 		}) // end of widget panel
 
-	var mainContainer = container.NewBorder(nil, nil, nil, nil, widget.NewLabel("Hello World!"))
+	// the preview canvas
+	var previewCanvas = container.NewWithoutLayout()
+	var canvasBorder = canvas.NewRectangle(color.NRGBA{200, 200, 200, 255}) // this controls the size of the widget (400x400)
+	var canvasFrame = container.NewStack(canvasBorder, container.NewPadded(previewCanvas))
+
+	btn := widget.NewButton("Click Me", func() {})
+        placeWidgetInsideCanvasRelatively(btn, 0.4, 0.45, 0.3, 0.1, fyne.NewSize(400, 400))
+        previewCanvas.Add(btn)
+
+	
+	canvasBorder.SetMinSize(fyne.NewSize(400, 400))
+
+	var mainContainer = container.NewCenter(canvasFrame)
 	var mainSplit = container.NewHSplit(widgetPanel, mainContainer)
         mainSplit.SetOffset(0.3)
 
@@ -74,7 +100,6 @@ func main() {
 	})
         window.ShowAndRun()
 }
-
 
 func addWidgetDialog(parent fyne.Window, list *widget.List) {
 	var selected string
