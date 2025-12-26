@@ -30,5 +30,11 @@ func GetConfigurationPath (isFirstTime *bool) (string, error) {
 		}
 	}
 
+	var configFilePath = filepath.Join(appConfigPath, "yeel.json")
+	
+	if _, err := os.Create(configFilePath); err != nil {
+		fmt.Println("ERROR failed to create the yeel.json file!")
+	}
+	
 	return appConfigPath, nil
 }
